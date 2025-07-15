@@ -1,0 +1,40 @@
+{
+  "name": "trie-autocomplete",
+  "version": "1.0.0",
+  "description": "Реализация префиксного дерева для автозаполнения с поддержкой слов и фраз",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "publish": "npm publish",
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "postinstall": "husky",
+    "test": "jest"
+  },
+  "keywords": [
+    "trie",
+    "autocomplete",
+    "prefix-tree",
+    "search",
+    "typescript"
+  ],
+  "author": "Pavel Samoylenko <psamoylenko2@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^9.1.7",
+    "jest": "^30.0.4",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3"
+  },
+  "files": [
+    "dist/**/*"
+  ]
+}
