@@ -8,8 +8,10 @@
     "build": "tsc",
     "prepare": "npm run build",
     "publish": "npm publish",
-    "lint": "eslint \"src/**/*.ts\" --fix",
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "postinstall": "husky",
+    "prepack": "pinst --disable",
+    "postpack": "pinst --enable",
     "test": "jest"
   },
   "keywords": [
@@ -30,6 +32,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "husky": "^9.1.7",
     "jest": "^30.0.4",
+    "pinst": "^3.0.0",
     "prettier": "^3.6.2",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
