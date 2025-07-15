@@ -1,4 +1,4 @@
-import { TrieService } from './trie.service';
+import { TrieService } from '../src';
 
 describe('TrieService', () => {
   let trieService: TrieService;
