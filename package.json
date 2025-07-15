@@ -1,5 +1,5 @@
 {
-  "name": "trie-autocomplete",
+  "name": "trie-autocomplete-ps",
   "version": "1.0.0",
   "description": "Реализация префиксного дерева для автозаполнения с поддержкой слов и фраз",
   "main": "dist/index.js",

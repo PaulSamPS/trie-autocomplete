@@ -15,22 +15,16 @@ import { TrieService, TrieController } from 'trie-autocomplete';
 
 // Initialize
 const trieService = new TrieService();
-const controller = new TrieController();
 
 // Insert data
 trieService.insert('рыба');
 trieService.insertPhrase('идти рыбачить');
-controller.insertWord({ word: 'океан' });
-controller.insertPhrase({ phrase: 'глубоководная рыбалка' });
 
 // Search
 console.log(trieService.search('рыба')); // true
-console.log(controller.searchPhrase('идти рыбачить')); // { exists: true, text: 'идти рыбачить' }
 
 // Autocomplete
 console.log(trieService.getWordsWithPrefix('рыб')); // ['рыба']
-console.log(controller.autocompletePhrases('идти'));
-// { prefix: 'идти', suggestions: ['идти рыбачить'], count: 1 }
 
 // Load demo data
 controller.loadFishingPhrases();
