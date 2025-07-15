@@ -1,6 +1,6 @@
 {
   "name": "trie-autocomplete-ps",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Реализация префиксного дерева для автозаполнения с поддержкой слов и фраз",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,6 @@
     "prepare": "npm run build",
     "publish": "npm publish",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
-    "postinstall": "husky",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
     "test": "jest"
