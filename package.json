@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "prepare": "npm run build",
-    "publish": "npm publish",
+    "build": "rollup -c",
+    "prepare": "yarn build",
+    "publish": "yarn publish",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
@@ -23,6 +23,8 @@
   "author": "Pavel Samoylenko <psamoylenko2@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
@@ -33,7 +35,10 @@
     "jest": "^30.0.4",
     "pinst": "^3.0.0",
     "prettier": "^3.6.2",
+    "rollup": "^4.45.1",
+    "terser": "^5.43.1",
     "ts-jest": "^29.4.0",
+    "tslib": "^2.8.1",
     "typescript": "^5.8.3"
   },
   "files": [
