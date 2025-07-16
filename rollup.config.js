@@ -1,33 +1,30 @@
 import typescript from '@rollup/plugin-typescript';
-import terser from '@rollup/plugin-terser';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import terser from '@rollup/plugin-terser'; // Добавьте этот импорт
 
 export default {
   input: 'src/index.ts',
   output: [
     {
-      file: 'dist/index.min.js',
+      file: 'dist/index.cjs.js',
       format: 'cjs',
-      sourcemap: false
+      exports: 'auto',
+      plugins: [terser()], // Добавьте минификацию здесь
     },
     {
-      file: 'dist/index.esm.min.js',
-      format: 'esm',
-      sourcemap: false
-    }
+      file: 'dist/index.esm.js',
+      format: 'es',
+      exports: 'auto',
+      plugins: [terser()], // И здесь
+    },
   ],
   plugins: [
+    nodeResolve(),
+    commonjs(),
     typescript({
       tsconfig: './tsconfig.json',
-      outputToFilesystem: true
+      outputToFilesystem: true,
     }),
-    terser({
-      format: {
-        comments: false
-      },
-      compress: {
-        drop_console: true
-      }
-    })
   ],
-  external: []
 };
