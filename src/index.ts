@@ -1,3 +1,5 @@
+export { InsertPhrase, InsertWord, SearchResponse, AutocompleteResponse } from './interface/trie-controller.type';
 export { TrieNode } from './interface/trie-node.interface';
-export { TrieService } from './services/trie.service';
-export { TrieController } from './controllers/trie.controller';
+import { TrieController } from './controllers/trie.controller';
+
+export const trie = new TrieController()

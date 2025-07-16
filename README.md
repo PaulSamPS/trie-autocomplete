@@ -1,60 +1,220 @@
-# Trie Autocomplete
+# Trie Controller
 
-Efficient TypeScript implementation of a trie (prefix tree) for autocomplete systems with support for both words and phrases.
+Контроллер для управления префиксным деревом (Trie) с поддержкой слов и фраз.
 
-## Installation
+## Описание
 
-```bash
-npm install trie-autocomplete
+`TrieController` предоставляет API для работы с префиксным деревом, включая операции вставки, поиска, автодополнения и управления данными. Поддерживает как отдельные слова, так и целые фразы.
+
+## Функциональность
+
+### Операции со словами
+
+- **insertWord** - добавление нового слова в дерево
+- **searchWord** - проверка существования слова в дереве
+- **deleteWord** - удаление слова из дерева
+- **autocompleteWords** - получение списка слов по префиксу
+
+### Операции с фразами
+
+- **insertPhrase** - добавление новой фразы в дерево
+- **searchPhrase** - проверка существования фразы в дереве
+- **autocompletePhrases** - получение списка фраз по префиксу
+
+### Дополнительные операции
+
+- **checkPrefix** - проверка наличия слов, начинающихся с заданного префикса
+- **getStats** - получение статистики по дереву
+- **clearTrie** - удаление всех данных из дерева
+- **loadFishingPhrases** - предзагрузка специализированных фраз
+
+## Интерфейсы
+
+### InsertWordDto
+```typescript
+interface InsertWordDto {
+  word: string;
+}
 ```
 
-## Usage
+### InsertPhraseDto
+```typescript
+interface InsertPhraseDto {
+  phrase: string;
+}
+```
+
+### SearchResponseDto
+```typescript
+interface SearchResponseDto {
+  exists: boolean;
+  text: string;
+}
+```
+
+### AutocompleteResponseDto
+```typescript
+interface AutocompleteResponseDto {
+  prefix: string;
+  suggestions: string[];
+  count: number;
+}
+```
+
+## Методы
+
+### insertWord(dto: InsertWordDto)
+```html
+- Добавляет новое слово в префиксное дерево.
+
+**Параметры:**
+- `dto` - объект с полем `word`
+
+**Возвращает:**
+- `{ message: string }` - сообщение об успешном добавлении
+
+**Исключения:**
+- Выбрасывает ошибку при неудачной вставке
+```
+
+### insertPhrase(dto: InsertPhraseDto)
+```html
+- Добавляет новую фразу в префиксное дерево.
+
+**Параметры:**
+- `dto` - объект с полем `phrase`
+
+**Возвращает:**
+- `{ message: string }` - сообщение об успешном добавлении
+
+**Исключения:**
+- Выбрасывает ошибку при неудачной вставке
+```
+
+### searchWord(word: string)
+```html
+- Ищет слово в префиксном дереве.
+
+**Параметры:**
+- `word` - слово для поиска
+
+**Возвращает:**
+- `SearchResponseDto` - результат поиска
+```
+
+### searchPhrase(phrase: string)
+```html
+- Ищет фразу в префиксном дереве.
+
+**Параметры:**
+- `phrase` - фраза для поиска
+
+**Возвращает:**
+- `SearchResponseDto` - результат поиска
+```
+
+### autocompleteWords(prefix: string, limit?: number)
+```html
+- Получает список слов, начинающихся с заданного префикса.
+
+**Параметры:**
+- `prefix` - префикс для поиска
+- `limit` - максимальное количество результатов (по умолчанию 10)
+
+**Возвращает:**
+- `AutocompleteResponseDto` - список предложений
+
+**Исключения:**
+- Выбрасывает ошибку, если префикс не указан
+```
+
+### autocompletePhrases(prefix: string, limit?: number)
+```html
+- Получает список фраз, начинающихся с заданного префикса.
+
+**Параметры:**
+- `prefix` - префикс для поиска
+- `limit` - максимальное количество результатов (по умолчанию 10)
+
+**Возвращает:**
+- `AutocompleteResponseDto` - список предложений
+
+**Исключения:**
+- Выбрасывает ошибку, если префикс не указан
+```
+
+### checkPrefix(prefix: string)
+```html
+- Проверяет наличие слов, начинающихся с заданного префикса.
+
+**Параметры:**
+- `prefix` - префикс для проверки
+
+**Возвращает:**
+- `{ hasWords: boolean }` - результат проверки
+```
+
+### deleteWord(word: string)
+```html
+- Удаляет слово из префиксного дерева.
+
+**Параметры:**
+- `word` - слово для удаления
+
+**Возвращает:**
+- `{ message: string }` - сообщение об успешном удалении
+
+**Исключения:**
+- Выбрасывает ошибку, если слово не найдено
+```
+
+### getStats()
+```html
+- Получает статистику по префиксному дереву.
+
+**Возвращает:**
+- Объект со статистикой
+```
+
+### clearTrie()
+```html
+- Очищает все данные из префиксного дерева.
+
+**Возвращает:**
+- `{ message: string }` - сообщение об успешной очистке
+```
+
+### loadFishingPhrases()
+```html
+- Загружает предустановленные рыболовные фразы в дерево.
+
+**Возвращает:**
+- `{ message: string; loaded: number }` - сообщение и количество загруженных фраз
+```
+
+## Обработка ошибок
+
+- trie включает обработку ошибок для всех операций. При возникновении ошибки выбрасывается исключение с описательным сообщением на русском языке.
+
+## Использование
 
 ```typescript
-import { TrieService, TrieController } from 'trie-autocomplete';
+import { trie } from 'trie-autocomplete-ps';
 
-// Initialize
-const trieService = new TrieService();
+// Добавление слова
+trie.insertWord({ word: "привет" });
 
-// Insert data
-trieService.insert('рыба');
-trieService.insertPhrase('идти рыбачить');
+// Поиск слова
+const result = trie.searchWord("привет");
 
-// Search
-console.log(trieService.search('рыба')); // true
+// Автодополнение
+const suggestions = trie.autocompleteWords("прив", 5);
 
-// Autocomplete
-console.log(trieService.getWordsWithPrefix('рыб')); // ['рыба']
-
-// Load demo data
-controller.loadFishingPhrases();
+// Получение статистики
+const stats = trie.getStats();
 ```
 
-## Features
+## Примечания
 
-- Insert/search words and phrases
-- Prefix-based autocomplete
-- Phrase normalization
-- Demo dataset for fishing-related phrases
-- Statistics tracking
-- Memory efficient
-
-## API Documentation
-
-### TrieService
-- `insert(word: string)`
-- `insertPhrase(phrase: string)`
-- `search(word: string): boolean`
-- `searchPhrase(phrase: string): boolean`
-- `startsWith(prefix: string): boolean`
-- `getWordsWithPrefix(prefix: string, limit = 10): string[]`
-- `getPhrasesWithPrefix(prefix: string, limit = 10): string[]`
-- `delete(word: string): boolean`
-- `getStats(): { totalNodes, totalWords, totalPhrases }`
-- `clear()`
-
-### TrieController
-- All TrieService methods wrapped
-- REST-friendly methods
-- DTO-based input validation
-- `loadFishingPhrases(): { message, loaded }`
+- Поддерживается работа как с отдельными словами, так и с целыми фразами
+- Методы автодополнения имеют ограничение по умолчанию в 10 результатов

@@ -1,23 +1,5 @@
 import { TrieService } from '../services/trie.service';
-
-interface InsertWordDto {
-  word: string;
-}
-
-interface InsertPhraseDto {
-  phrase: string;
-}
-
-interface SearchResponseDto {
-  exists: boolean;
-  text: string;
-}
-
-interface AutocompleteResponseDto {
-  prefix: string;
-  suggestions: string[];
-  count: number;
-}
+import { AutocompleteResponse, InsertPhrase, InsertWord, SearchResponse } from '../interface/trie-controller.type';
 
 export class TrieController {
   private readonly trieService: TrieService;
@@ -26,7 +8,7 @@ export class TrieController {
     this.trieService = new TrieService();
   }
 
-  insertWord(dto: InsertWordDto): { message: string } {
+  insertWord(dto: InsertWord): { message: string } {
     try {
       this.trieService.insert(dto.word);
       return { message: `Слово "${dto.word}" успешно добавлено` };
@@ -37,7 +19,7 @@ export class TrieController {
     }
   }
 
-  insertPhrase(dto: InsertPhraseDto): { message: string } {
+  insertPhrase(dto: InsertPhrase): { message: string } {
     try {
       this.trieService.insertPhrase(dto.phrase);
       return { message: `Фраза "${dto.phrase}" успешно добавлена` };
@@ -48,7 +30,7 @@ export class TrieController {
     }
   }
 
-  searchWord(word: string): SearchResponseDto {
+  searchWord(word: string): SearchResponse {
     const exists = this.trieService.search(word);
     return {
       exists,
@@ -56,7 +38,7 @@ export class TrieController {
     };
   }
 
-  searchPhrase(phrase: string): SearchResponseDto {
+  searchPhrase(phrase: string): SearchResponse {
     const exists = this.trieService.searchPhrase(phrase);
     return {
       exists,
@@ -64,7 +46,7 @@ export class TrieController {
     };
   }
 
-  autocompleteWords(prefix: string, limit?: number): AutocompleteResponseDto {
+  autocompleteWords(prefix: string, limit?: number): AutocompleteResponse {
     const limitNum = limit || 10;
 
     if (!prefix) {
@@ -80,7 +62,7 @@ export class TrieController {
     };
   }
 
-  autocompletePhrases(prefix: string, limit?: number): AutocompleteResponseDto {
+  autocompletePhrases(prefix: string, limit?: number): AutocompleteResponse {
     const limitNum = limit || 10;
 
     if (!prefix) {
