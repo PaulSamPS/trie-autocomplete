@@ -1,8 +1,9 @@
-import { TrieNode } from '../interface/trie-node.interface';
+import { TreeNode } from '../interface/tree-node.interface';
+import { TreeStats } from '../interface/tree-stats.interface';
 
-export class TrieService {
-  private readonly wordTrie: TrieNode;
-  private readonly phraseTrie: TrieNode;
+export class TreeService {
+  private readonly wordTrie: TreeNode;
+  private readonly phraseTrie: TreeNode;
   private readonly WORD_SEPARATOR = '___WORD___';
 
   constructor() {
@@ -13,10 +14,10 @@ export class TrieService {
   /**
    * Создает новый узел дерева
    */
-  private createNode(): TrieNode {
+  private createNode(): TreeNode {
     return {
       isEndOfWord: false,
-      children: new Map<string, TrieNode>(),
+      children: new Map<string, TreeNode>(),
     };
   }
 
@@ -244,7 +245,7 @@ export class TrieService {
    * Рекурсивный поиск слов в глубину
    */
   private dfsWordSearch(
-    node: TrieNode,
+    node: TreeNode,
     currentWord: string,
     results: string[],
     limit: number,
@@ -272,7 +273,7 @@ export class TrieService {
    * Рекурсивный поиск фраз в глубину
    */
   private dfsPhraseSearch(
-    node: TrieNode,
+    node: TreeNode,
     currentPath: string,
     results: string[],
     limit: number,
@@ -324,7 +325,7 @@ export class TrieService {
    * Рекурсивное удаление слова
    */
   private deleteWordRecursive(
-    node: TrieNode,
+    node: TreeNode,
     word: string,
     index: number,
   ): boolean {
@@ -365,7 +366,7 @@ export class TrieService {
   /**
    * Получает статистику дерева
    */
-  getStats(): { totalNodes: number; totalWords: number; totalPhrases: number } {
+  getStats(): TreeStats {
     const wordStats = this.getTreeStats(this.wordTrie);
     const phraseStats = this.getTreeStats(this.phraseTrie);
 
@@ -379,7 +380,10 @@ export class TrieService {
   /**
    * Получает статистику конкретного дерева
    */
-  private getTreeStats(node: TrieNode): { nodes: number; words: number } {
+  private getTreeStats(node: TreeNode): {
+    nodes: number;
+    words: number;
+  } {
     let nodes = 1;
     let words = node.isEndOfWord ? 1 : 0;
 

@@ -1,10 +1,10 @@
-import { TrieService } from '../src';
+import { TreeService } from '../src/services/tree.service';
 
-describe('TrieService', () => {
-  let trieService: TrieService;
+describe('TreeService', () => {
+  let trieService: TreeService;
 
   beforeEach(() => {
-    trieService = new TrieService();
+    trieService = new TreeService();
   });
 
   describe('конструктор', () => {

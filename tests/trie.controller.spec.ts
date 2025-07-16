@@ -1,16 +1,17 @@
+// Мокаем TreeService
 
-// Мокаем TrieService
-import { TrieController, TrieService } from '../src';
+import { TreeController } from '../src/controllers/tree.controller';
+import { TreeService } from '../src/services/tree.service';
 
-jest.mock('../src/services/trie.service');
+jest.mock('../src/services/tree.service');
 
-describe('TrieController', () => {
-  let trieController: TrieController;
-  let mockTrieService: jest.Mocked<TrieService>;
+describe('TreeController', () => {
+  let trieController: TreeController;
+  let mockTrieService: jest.Mocked<TreeService>;
 
   beforeEach(() => {
     // Создаем новый экземпляр контроллера перед каждым тестом
-    trieController = new TrieController();
+    trieController = new TreeController();
     mockTrieService = (trieController as any).trieService;
   });
 
@@ -37,7 +38,7 @@ describe('TrieController', () => {
       });
 
       expect(() => trieController.insertWord(wordDto)).toThrow(
-        `Ошибка запроса: ${errorMessage}`
+        `Ошибка запроса: ${errorMessage}`,
       );
       expect(mockTrieService.insert).toHaveBeenCalledWith('test');
     });
@@ -49,7 +50,7 @@ describe('TrieController', () => {
       });
 
       expect(() => trieController.insertWord(wordDto)).toThrow(
-        'Ошибка запроса: Неизвестная ошибка'
+        'Ошибка запроса: Неизвестная ошибка',
       );
     });
   });
@@ -62,7 +63,9 @@ describe('TrieController', () => {
       const result = trieController.insertPhrase(phraseDto);
 
       expect(mockTrieService.insertPhrase).toHaveBeenCalledWith('test phrase');
-      expect(result).toEqual({ message: 'Фраза "test phrase" успешно добавлена' });
+      expect(result).toEqual({
+        message: 'Фраза "test phrase" успешно добавлена',
+      });
     });
 
     it('должен обработать ошибку при добавлении фразы', () => {
@@ -73,7 +76,7 @@ describe('TrieController', () => {
       });
 
       expect(() => trieController.insertPhrase(phraseDto)).toThrow(
-        `Ошибка запроса: ${errorMessage}`
+        `Ошибка запроса: ${errorMessage}`,
       );
       expect(mockTrieService.insertPhrase).toHaveBeenCalledWith('test phrase');
     });
@@ -143,7 +146,10 @@ describe('TrieController', () => {
 
       const result = trieController.autocompleteWords(prefix);
 
-      expect(mockTrieService.getWordsWithPrefix).toHaveBeenCalledWith(prefix, 10);
+      expect(mockTrieService.getWordsWithPrefix).toHaveBeenCalledWith(
+        prefix,
+        10,
+      );
       expect(result).toEqual({
         prefix,
         suggestions,
@@ -159,7 +165,10 @@ describe('TrieController', () => {
 
       const result = trieController.autocompleteWords(prefix, limit);
 
-      expect(mockTrieService.getWordsWithPrefix).toHaveBeenCalledWith(prefix, limit);
+      expect(mockTrieService.getWordsWithPrefix).toHaveBeenCalledWith(
+        prefix,
+        limit,
+      );
       expect(result).toEqual({
         prefix,
         suggestions,
@@ -169,7 +178,7 @@ describe('TrieController', () => {
 
     it('должен выбросить ошибку при пустом префиксе', () => {
       expect(() => trieController.autocompleteWords('')).toThrow(
-        'Префикс обязателен для автодополнения'
+        'Префикс обязателен для автодополнения',
       );
       expect(mockTrieService.getWordsWithPrefix).not.toHaveBeenCalled();
     });
@@ -196,7 +205,10 @@ describe('TrieController', () => {
 
       const result = trieController.autocompletePhrases(prefix);
 
-      expect(mockTrieService.getPhrasesWithPrefix).toHaveBeenCalledWith(prefix, 10);
+      expect(mockTrieService.getPhrasesWithPrefix).toHaveBeenCalledWith(
+        prefix,
+        10,
+      );
       expect(result).toEqual({
         prefix,
         suggestions,
@@ -212,7 +224,10 @@ describe('TrieController', () => {
 
       const result = trieController.autocompletePhrases(prefix, limit);
 
-      expect(mockTrieService.getPhrasesWithPrefix).toHaveBeenCalledWith(prefix, limit);
+      expect(mockTrieService.getPhrasesWithPrefix).toHaveBeenCalledWith(
+        prefix,
+        limit,
+      );
       expect(result).toEqual({
         prefix,
         suggestions,
@@ -222,7 +237,7 @@ describe('TrieController', () => {
 
     it('должен выбросить ошибку при пустом префиксе', () => {
       expect(() => trieController.autocompletePhrases('')).toThrow(
-        'Префикс обязателен для автодополнения'
+        'Префикс обязателен для автодополнения',
       );
       expect(mockTrieService.getPhrasesWithPrefix).not.toHaveBeenCalled();
     });
@@ -314,12 +329,12 @@ describe('TrieController', () => {
 
   // Интеграционные тесты с мокированием поведения
   describe('Integration tests', () => {
-    let integrationController: TrieController;
-    let integrationMockService: jest.Mocked<TrieService>;
+    let integrationController: TreeController;
+    let integrationMockService: jest.Mocked<TreeService>;
 
     beforeEach(() => {
       jest.clearAllMocks();
-      integrationController = new TrieController();
+      integrationController = new TreeController();
       integrationMockService = (integrationController as any).trieService;
     });
 
@@ -338,13 +353,15 @@ describe('TrieController', () => {
       });
 
       // Мокируем getWordsWithPrefix для автодополнения
-      integrationMockService.getWordsWithPrefix.mockImplementation((prefix: string) => {
-        return Array.from(words).filter(word => word.startsWith(prefix));
-      });
+      integrationMockService.getWordsWithPrefix.mockImplementation(
+        (prefix: string) => {
+          return Array.from(words).filter((word) => word.startsWith(prefix));
+        },
+      );
 
       // Мокируем startsWith для проверки префикса
       integrationMockService.startsWith.mockImplementation((prefix: string) => {
-        return Array.from(words).some(word => word.startsWith(prefix));
+        return Array.from(words).some((word) => word.startsWith(prefix));
       });
 
       // Мокируем delete для удаления слов
@@ -366,7 +383,9 @@ describe('TrieController', () => {
 
       // Проверяем поиск
       expect(integrationController.searchWord('test').exists).toBe(true);
-      expect(integrationController.searchWord('nonexistent').exists).toBe(false);
+      expect(integrationController.searchWord('nonexistent').exists).toBe(
+        false,
+      );
 
       // Проверяем автодополнение
       const autocomplete = integrationController.autocompleteWords('te');
@@ -384,7 +403,9 @@ describe('TrieController', () => {
 
       // Очищаем все
       integrationController.clearTrie();
-      expect(integrationController.autocompleteWords('te').suggestions).toHaveLength(0);
+      expect(
+        integrationController.autocompleteWords('te').suggestions,
+      ).toHaveLength(0);
     });
 
     it('должен работать с фразами', () => {
@@ -392,27 +413,39 @@ describe('TrieController', () => {
       const phrases = new Set<string>();
 
       // Мокируем insertPhrase для отслеживания добавленных фраз
-      integrationMockService.insertPhrase.mockImplementation((phrase: string) => {
-        phrases.add(phrase);
-      });
+      integrationMockService.insertPhrase.mockImplementation(
+        (phrase: string) => {
+          phrases.add(phrase);
+        },
+      );
 
       // Мокируем searchPhrase для проверки существования фраз
-      integrationMockService.searchPhrase.mockImplementation((phrase: string) => {
-        return phrases.has(phrase);
-      });
+      integrationMockService.searchPhrase.mockImplementation(
+        (phrase: string) => {
+          return phrases.has(phrase);
+        },
+      );
 
       // Мокируем getPhrasesWithPrefix для автодополнения фраз
-      integrationMockService.getPhrasesWithPrefix.mockImplementation((prefix: string) => {
-        return Array.from(phrases).filter(phrase => phrase.startsWith(prefix));
-      });
+      integrationMockService.getPhrasesWithPrefix.mockImplementation(
+        (prefix: string) => {
+          return Array.from(phrases).filter((phrase) =>
+            phrase.startsWith(prefix),
+          );
+        },
+      );
 
       // Добавляем фразы
       integrationController.insertPhrase({ phrase: 'test phrase' });
       integrationController.insertPhrase({ phrase: 'test example' });
 
       // Проверяем поиск фраз
-      expect(integrationController.searchPhrase('test phrase').exists).toBe(true);
-      expect(integrationController.searchPhrase('nonexistent phrase').exists).toBe(false);
+      expect(integrationController.searchPhrase('test phrase').exists).toBe(
+        true,
+      );
+      expect(
+        integrationController.searchPhrase('nonexistent phrase').exists,
+      ).toBe(false);
 
       // Проверяем автодополнение фраз
       const autocomplete = integrationController.autocompletePhrases('test');
