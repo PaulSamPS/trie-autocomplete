@@ -1,10 +1,10 @@
-# Trie Controller
+# tree
 
-Контроллер для управления префиксным деревом (Trie) с поддержкой слов и фраз.
+Управление префиксным деревом (tree) с поддержкой слов и фраз.
 
 ## Описание
 
-`TreeController` предоставляет API для работы с префиксным деревом, включая операции вставки, поиска, автодополнения и управления данными. Поддерживает как отдельные слова, так и целые фразы.
+`trie` предоставляет API для работы с префиксным деревом, включая операции вставки, поиска, автодополнения и управления данными. Поддерживает как отдельные слова, так и целые фразы.
 
 ## Функциональность
 
@@ -28,33 +28,37 @@
 - **clearTrie** - удаление всех данных из дерева
 - **loadFishingPhrases** - предзагрузка специализированных фраз
 
+## Веб пример
+
+[Пример](https://prefix-tree-web-example.vercel.app/)
+
 ## Интерфейсы
 
-### InsertWordDto
+### InsertWord
 ```typescript
-interface InsertWordDto {
+interface InsertWord {
   word: string;
 }
 ```
 
-### InsertPhraseDto
+### InsertPhrase
 ```typescript
-interface InsertPhraseDto {
+interface InsertPhrase {
   phrase: string;
 }
 ```
 
-### SearchResponseDto
+### SearchResponse
 ```typescript
-interface SearchResponseDto {
+interface SearchResponse {
   exists: boolean;
   text: string;
 }
 ```
 
-### AutocompleteResponseDto
+### AutocompleteResponse
 ```typescript
-interface AutocompleteResponseDto {
+interface AutocompleteResponse {
   prefix: string;
   suggestions: string[];
   count: number;
@@ -63,7 +67,7 @@ interface AutocompleteResponseDto {
 
 ## Методы
 
-### insertWord(dto: InsertWordDto)
+### insertWord(dto: InsertWord)
 ```html
 - Добавляет новое слово в префиксное дерево.
 
@@ -77,7 +81,7 @@ interface AutocompleteResponseDto {
 - Выбрасывает ошибку при неудачной вставке
 ```
 
-### insertPhrase(dto: InsertPhraseDto)
+### insertPhrase(dto: InsertPhrase)
 ```html
 - Добавляет новую фразу в префиксное дерево.
 
@@ -199,7 +203,7 @@ interface AutocompleteResponseDto {
 ## Использование
 
 ```typescript
-import { tree } from 'trie-autocomplete-ps';
+import { tree } from 'tree-autocomplete"';
 
 // Добавление слова
 tree.insertWord({ word: "привет" });
