@@ -322,6 +322,33 @@ export class TreeService {
   }
 
   /**
+   * Удаляет фразу из дерева
+   */
+  deletePhrase(phrase: string): boolean {
+    if (!phrase || phrase.trim().length === 0) {
+      return false;
+    }
+
+    const normalizedPhrase = this.normalizeText(phrase);
+
+    // Проверяем, существует ли фраза
+    if (!this.searchPhrase(normalizedPhrase)) {
+      return false;
+    }
+
+    const phrasePath = this.phraseToPath(normalizedPhrase);
+
+    // Удаляем фразу рекурсивно
+    this.deletePhraseRecursive(
+      this.phraseTrie,
+      phrasePath,
+      0,
+      normalizedPhrase,
+    );
+    return true;
+  }
+
+  /**
    * Рекурсивное удаление слова
    */
   private deleteWordRecursive(
@@ -358,6 +385,65 @@ export class TreeService {
       node.children.delete(char);
       // Возвращаем true, если узел можно удалить (нет детей и не конец слова)
       return node.children.size === 0 && !node.isEndOfWord;
+    }
+
+    return false;
+  }
+
+  /**
+   * Рекурсивное удаление фразы
+   */
+  private deletePhraseRecursive(
+    node: TreeNode,
+    phrasePath: string,
+    index: number,
+    originalPhrase: string,
+  ): boolean {
+    if (index === phrasePath.length) {
+      // Дошли до конца фразы
+      if (!node.isEndOfWord || node.original !== originalPhrase) {
+        return false;
+      }
+
+      // Снимаем отметку о конце фразы и удаляем оригинальный текст
+      node.isEndOfWord = false;
+      delete node.original;
+
+      // Если у узла нет детей, его можно удалить
+      return node.children.size === 0;
+    }
+
+    const char = phrasePath[index];
+    const childNode = node.children.get(char);
+
+    if (!childNode) {
+      return false;
+    }
+
+    const shouldDeleteChild = this.deletePhraseRecursive(
+      childNode,
+      phrasePath,
+      index + 1,
+      originalPhrase,
+    );
+
+    if (shouldDeleteChild) {
+      node.children.delete(char);
+
+      // Проверяем, можно ли удалить текущий узел
+      // Узел можно удалить только если:
+      // 1. У него нет детей
+      // 2. Он не является концом другой фразы ИЛИ его original не совпадает с удаляемой фразой
+      const canDeleteNode =
+        node.children.size === 0 &&
+        (!node.isEndOfWord || node.original === originalPhrase);
+
+      if (canDeleteNode && node.original === originalPhrase) {
+        node.isEndOfWord = false;
+        delete node.original;
+      }
+
+      return canDeleteNode;
     }
 
     return false;

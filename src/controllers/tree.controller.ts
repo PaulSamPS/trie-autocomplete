@@ -163,6 +163,24 @@ export class TreeController {
   }
 
   /**
+   * Удаляет фразу из дерева
+   * @param {string} phrase - Фраза для удаления
+   * @returns {Object} Сообщение об успешном удалении
+   * @throws {Error} Если фраза не найдена
+   * @example
+   * deletePhrase("зимняя рыбалка") // { message: 'Фраза "зимняя рыбалка" успешно удалена' }
+   */
+  deletePhrase(phrase: string): { message: string } {
+    const deleted = this.trieService.deletePhrase(phrase);
+
+    if (!deleted) {
+      throw new Error('Фраза не найдена');
+    }
+
+    return { message: `Фраза "${phrase}" успешно удалена` };
+  }
+
+  /**
    * Возвращает статистику дерева
    * @returns {TreeStats} Статистика (количество слов/узлов)
    * @example
