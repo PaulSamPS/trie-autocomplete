@@ -72,8 +72,8 @@ describe('TreeService', () => {
 
     it('добавляет префиксы фраз', () => {
       trieService.insertPhrase('hello beautiful world');
-      expect(trieService.searchPhrase('hello')).toBe(true);
-      expect(trieService.searchPhrase('hello beautiful')).toBe(true);
+      expect(trieService.searchPhrase('hello')).toBe(false);
+      expect(trieService.searchPhrase('hello beautiful')).toBe(false);
       expect(trieService.searchPhrase('hello beautiful world')).toBe(true);
     });
 
@@ -149,8 +149,8 @@ describe('TreeService', () => {
     });
 
     it('находит префиксы фраз', () => {
-      expect(trieService.searchPhrase('hello')).toBe(true);
-      expect(trieService.searchPhrase('hello beautiful')).toBe(true);
+      expect(trieService.searchPhrase('hello')).toBe(false);
+      expect(trieService.searchPhrase('hello beautiful')).toBe(false);
     });
 
     it('не находит отсутствующие фразы', () => {
@@ -276,7 +276,6 @@ describe('TreeService', () => {
       expect(results).toContain('hello world');
       expect(results).toContain('hello beautiful world');
       expect(results).toContain('hello universe');
-      expect(results).toContain('hello');
       expect(results).not.toContain('goodbye world');
     });
 
@@ -384,7 +383,7 @@ describe('TreeService', () => {
       trieService.insertPhrase('hello universe');
 
       const stats = trieService.getStats();
-      expect(stats.totalPhrases).toBe(3); // hello, hello world, hello universe
+      expect(stats.totalPhrases).toBe(2);
       expect(stats.totalNodes).toBeGreaterThan(2);
     });
 
@@ -394,7 +393,7 @@ describe('TreeService', () => {
 
       const stats = trieService.getStats();
       expect(stats.totalWords).toBe(1);
-      expect(stats.totalPhrases).toBe(2); // hello, hello world
+      expect(stats.totalPhrases).toBe(1);
     });
   });
 

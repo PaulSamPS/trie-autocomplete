@@ -107,11 +107,11 @@ export class TreeService {
       currentNode.isEndOfWord = true;
       currentNode.original = phrase;
     } else {
-      // Для префиксов также отмечаем как конец слова
-      currentNode.isEndOfWord = true;
-      if (!currentNode.original) {
-        currentNode.original = phrase;
+      // Для префиксов НЕ отмечаем как конец слова, только добавляем в список префиксов
+      if (!currentNode.prefixes) {
+        currentNode.prefixes = new Set();
       }
+      currentNode.prefixes.add(phrase);
     }
   }
 
@@ -230,12 +230,12 @@ export class TreeService {
       currentNode = currentNode.children.get(char)!;
     }
 
-    // Если сам префикс является фразой, добавляем его
+    // Если сам префикс является полной фразой (isEndOfWord = true), добавляем его
     if (currentNode.isEndOfWord && currentNode.original) {
       results.push(currentNode.original);
     }
 
-    // Ищем все фразы, начинающиеся с этого префикса
+    // Ищем все полные фразы, начинающиеся с этого префикса
     this.dfsPhraseSearch(currentNode, phrasePath, results, limit);
 
     return results.slice(0, limit);
@@ -285,6 +285,7 @@ export class TreeService {
     for (const [char, childNode] of node.children) {
       const newPath = currentPath + char;
 
+      // Добавляем только полные фразы (isEndOfWord = true)
       if (childNode.isEndOfWord && childNode.original) {
         if (!results.includes(childNode.original)) {
           results.push(childNode.original);
@@ -336,6 +337,14 @@ export class TreeService {
       return false;
     }
 
+    // Получаем все префиксы фразы
+    const words = normalizedPhrase.split(' ');
+    const allPrefixes: string[] = [];
+
+    for (let i = 1; i < words.length; i++) {
+      allPrefixes.push(words.slice(0, i).join(' '));
+    }
+
     // Удаляем основную фразу
     const phrasePath = this.phraseToPath(normalizedPhrase);
     this.deletePhraseRecursive(
@@ -345,21 +354,9 @@ export class TreeService {
       normalizedPhrase,
     );
 
-    // Удаляем все промежуточные префиксы, которые были созданы только для этой фразы
-    const words = normalizedPhrase.split(' ');
-    for (let i = 1; i < words.length; i++) {
-      const partialPhrase = words.slice(0, i).join(' ');
-      const partialPath = this.phraseToPath(partialPhrase);
-
-      // Проверяем, используется ли этот префикс другими фразами
-      if (!this.isPrefixUsedByOtherPhrases(partialPath)) {
-        this.deletePhraseRecursive(
-          this.phraseTrie,
-          partialPath,
-          0,
-          partialPhrase,
-        );
-      }
+    // Удаляем префиксы из узлов
+    for (const prefix of allPrefixes) {
+      this.removePrefixFromNodes(prefix);
     }
 
     return true;
@@ -408,49 +405,50 @@ export class TreeService {
   }
 
   /**
-   * Проверяет, используется ли префикс другими фразами
+   * Удаляет префикс из узлов и очищает пустые узлы
    */
-  private isPrefixUsedByOtherPhrases(prefixPath: string): boolean {
+  private removePrefixFromNodes(prefix: string): void {
+    const prefixPath = this.phraseToPath(prefix);
     let currentNode = this.phraseTrie;
+    const nodePath: { node: TreeNode; char: string; parent: TreeNode }[] = [];
 
-    // Находим узел префикса
+    // Находим путь к узлу префикса
     for (const char of prefixPath) {
       if (!currentNode.children.has(char)) {
-        return false;
+        return; // Префикс не найден
       }
-      currentNode = currentNode.children.get(char)!;
+      const childNode = currentNode.children.get(char)!;
+      nodePath.push({ node: childNode, char, parent: currentNode });
+      currentNode = childNode;
     }
 
-    // Проверяем, есть ли дочерние узлы (означает, что есть более длинные фразы)
-    if (currentNode.children.size > 0) {
-      // Проверяем, есть ли реальные фразы среди потомков
-      return this.hasValidPhrasesInSubtree(currentNode, prefixPath);
-    }
-
-    return false;
-  }
-
-  /**
-   * Проверяет, есть ли валидные фразы в поддереве
-   */
-  private hasValidPhrasesInSubtree(
-    node: TreeNode,
-    currentPath: string,
-  ): boolean {
-    // Проверяем дочерние узлы
-    for (const [char, childNode] of node.children) {
-      const newPath = currentPath + char;
-
-      if (childNode.isEndOfWord && childNode.original) {
-        return true;
-      }
-
-      if (this.hasValidPhrasesInSubtree(childNode, newPath)) {
-        return true;
+    // Удаляем префикс из узла
+    if (currentNode.prefixes) {
+      currentNode.prefixes.delete(prefix);
+      if (currentNode.prefixes.size === 0) {
+        delete currentNode.prefixes;
       }
     }
 
-    return false;
+    // Проверяем, можно ли удалить узлы снизу вверх
+    for (let i = nodePath.length - 1; i >= 0; i--) {
+      const { node, char, parent } = nodePath[i];
+
+      // Узел можно удалить, если:
+      // 1. Он не является концом фразы (isEndOfWord = false)
+      // 2. У него нет детей
+      // 3. У него нет префиксов
+      if (
+        !node.isEndOfWord &&
+        node.children.size === 0 &&
+        (!node.prefixes || node.prefixes.size === 0)
+      ) {
+        parent.children.delete(char);
+      } else {
+        // Если узел нельзя удалить, прекращаем удаление вверх по дереву
+        break;
+      }
+    }
   }
   private deletePhraseRecursive(
     node: TreeNode,
