@@ -18,6 +18,7 @@ export class TreeService {
     return {
       isEndOfWord: false,
       children: new Map<string, TreeNode>(),
+      count: 0,
     };
   }
 
@@ -35,13 +36,6 @@ export class TreeService {
     const words = this.normalizeText(phrase).split(' ');
     return words.join(this.WORD_SEPARATOR);
   }
-
-  /**
-   * Преобразует путь обратно в фразу
-   */
-  // private pathToPhrase(path: string): string {
-  //   return path.split(this.WORD_SEPARATOR).join(' ');
-  // }
 
   /**
    * Добавляет слово в префиксное дерево (для одиночных слов)
@@ -62,8 +56,9 @@ export class TreeService {
       currentNode = currentNode.children.get(char)!;
     }
 
-    // Отмечаем конец слова
+    // Отмечаем конец слова и увеличиваем счетчик
     currentNode.isEndOfWord = true;
+    currentNode.count++;
   }
 
   /**
@@ -102,9 +97,10 @@ export class TreeService {
       currentNode = currentNode.children.get(char)!;
     }
 
-    // Отмечаем конец фразы и сохраняем оригинальный текст
+    // Отмечаем конец фразы и увеличиваем счетчик
     if (isComplete) {
       currentNode.isEndOfWord = true;
+      currentNode.count++;
       currentNode.original = phrase;
     } else {
       // Для префиксов НЕ отмечаем как конец слова, только добавляем в список префиксов
@@ -134,7 +130,7 @@ export class TreeService {
       currentNode = currentNode.children.get(char)!;
     }
 
-    return currentNode.isEndOfWord;
+    return currentNode.isEndOfWord && currentNode.count > 0;
   }
 
   /**
@@ -157,7 +153,50 @@ export class TreeService {
       currentNode = currentNode.children.get(char)!;
     }
 
-    return currentNode.isEndOfWord;
+    return currentNode.isEndOfWord && currentNode.count > 0;
+  }
+
+  /**
+   * Получает количество вхождений слова
+   */
+  getWordCount(word: string): number {
+    if (!word || word.trim().length === 0) {
+      return 0;
+    }
+
+    const normalizedWord = word.toLowerCase().trim();
+    let currentNode = this.wordTrie;
+
+    for (const char of normalizedWord) {
+      if (!currentNode.children.has(char)) {
+        return 0;
+      }
+      currentNode = currentNode.children.get(char)!;
+    }
+
+    return currentNode.isEndOfWord ? currentNode.count : 0;
+  }
+
+  /**
+   * Получает количество вхождений фразы
+   */
+  getPhraseCount(phrase: string): number {
+    if (!phrase || phrase.trim().length === 0) {
+      return 0;
+    }
+
+    const normalizedPhrase = this.normalizeText(phrase);
+    const phrasePath = this.phraseToPath(normalizedPhrase);
+    let currentNode = this.phraseTrie;
+
+    for (const char of phrasePath) {
+      if (!currentNode.children.has(char)) {
+        return 0;
+      }
+      currentNode = currentNode.children.get(char)!;
+    }
+
+    return currentNode.isEndOfWord ? currentNode.count : 0;
   }
 
   /**
@@ -230,8 +269,12 @@ export class TreeService {
       currentNode = currentNode.children.get(char)!;
     }
 
-    // Если сам префикс является полной фразой (isEndOfWord = true), добавляем его
-    if (currentNode.isEndOfWord && currentNode.original) {
+    // Если сам префикс является полной фразой и имеет count > 0, добавляем его
+    if (
+      currentNode.isEndOfWord &&
+      currentNode.original &&
+      currentNode.count > 0
+    ) {
       results.push(currentNode.original);
     }
 
@@ -254,7 +297,7 @@ export class TreeService {
       return;
     }
 
-    if (node.isEndOfWord) {
+    if (node.isEndOfWord && node.count > 0) {
       results.push(currentWord);
       if (results.length >= limit) {
         return;
@@ -285,8 +328,8 @@ export class TreeService {
     for (const [char, childNode] of node.children) {
       const newPath = currentPath + char;
 
-      // Добавляем только полные фразы (isEndOfWord = true)
-      if (childNode.isEndOfWord && childNode.original) {
+      // Добавляем только полные фразы с count > 0
+      if (childNode.isEndOfWord && childNode.original && childNode.count > 0) {
         if (!results.includes(childNode.original)) {
           results.push(childNode.original);
           if (results.length >= limit) {
@@ -303,7 +346,7 @@ export class TreeService {
   }
 
   /**
-   * Удаляет слово из дерева
+   * Удаляет слово из дерева (уменьшает счетчик)
    */
   delete(word: string): boolean {
     if (!word || word.trim().length === 0) {
@@ -317,13 +360,30 @@ export class TreeService {
       return false;
     }
 
-    // Удаляем слово рекурсивно
-    this.deleteWordRecursive(this.wordTrie, normalizedWord, 0);
+    let currentNode = this.wordTrie;
+
+    // Находим конечный узел
+    for (const char of normalizedWord) {
+      currentNode = currentNode.children.get(char)!;
+    }
+
+    // Уменьшаем счетчик
+    if (currentNode.count > 0) {
+      currentNode.count--;
+
+      // Если счетчик стал 0, снимаем флаг конца слова
+      if (currentNode.count === 0) {
+        currentNode.isEndOfWord = false;
+        // Можно добавить логику физического удаления пустых узлов при необходимости
+        this.deleteWordRecursive(this.wordTrie, normalizedWord, 0);
+      }
+    }
+
     return true;
   }
 
   /**
-   * Удаляет фразу из дерева
+   * Удаляет фразу из дерева (уменьшает счетчик)
    */
   deletePhrase(phrase: string): boolean {
     if (!phrase || phrase.trim().length === 0) {
@@ -337,33 +397,37 @@ export class TreeService {
       return false;
     }
 
-    // Получаем все префиксы фразы
-    const words = normalizedPhrase.split(' ');
-    const allPrefixes: string[] = [];
+    const phrasePath = this.phraseToPath(normalizedPhrase);
+    let currentNode = this.phraseTrie;
 
-    for (let i = 1; i < words.length; i++) {
-      allPrefixes.push(words.slice(0, i).join(' '));
+    // Находим конечный узел
+    for (const char of phrasePath) {
+      currentNode = currentNode.children.get(char)!;
     }
 
-    // Удаляем основную фразу
-    const phrasePath = this.phraseToPath(normalizedPhrase);
-    this.deletePhraseRecursive(
-      this.phraseTrie,
-      phrasePath,
-      0,
-      normalizedPhrase,
-    );
+    // Уменьшаем счетчик
+    if (currentNode.count > 0) {
+      currentNode.count--;
 
-    // Удаляем префиксы из узлов
-    for (const prefix of allPrefixes) {
-      this.removePrefixFromNodes(prefix);
+      // Если счетчик стал 0, снимаем флаг конца фразы и удаляем original
+      if (currentNode.count === 0) {
+        currentNode.isEndOfWord = false;
+        delete currentNode.original;
+
+        // Также удаляем связанные префиксы
+        const words = normalizedPhrase.split(' ');
+        for (let i = 1; i < words.length; i++) {
+          const prefix = words.slice(0, i).join(' ');
+          this.removePrefixFromNodes(prefix);
+        }
+      }
     }
 
     return true;
   }
 
   /**
-   * Рекурсивное удаление слова
+   * Рекурсивное удаление слова (только если count = 0)
    */
   private deleteWordRecursive(
     node: TreeNode,
@@ -372,11 +436,9 @@ export class TreeService {
   ): boolean {
     if (index === word.length) {
       // Дошли до конца слова
-      if (!node.isEndOfWord) {
+      if (!node.isEndOfWord || node.count > 0) {
         return false;
       }
-
-      node.isEndOfWord = false;
 
       // Если у узла нет детей, его можно удалить
       return node.children.size === 0;
@@ -397,8 +459,10 @@ export class TreeService {
 
     if (shouldDeleteChild) {
       node.children.delete(char);
-      // Возвращаем true, если узел можно удалить (нет детей и не конец слова)
-      return node.children.size === 0 && !node.isEndOfWord;
+      // Возвращаем true, если узел можно удалить (нет детей и не конец слова с count > 0)
+      return (
+        node.children.size === 0 && (!node.isEndOfWord || node.count === 0)
+      );
     }
 
     return false;
@@ -435,11 +499,11 @@ export class TreeService {
       const { node, char, parent } = nodePath[i];
 
       // Узел можно удалить, если:
-      // 1. Он не является концом фразы (isEndOfWord = false)
+      // 1. Он не является концом фразы с count > 0
       // 2. У него нет детей
       // 3. У него нет префиксов
       if (
-        !node.isEndOfWord &&
+        (!node.isEndOfWord || node.count === 0) &&
         node.children.size === 0 &&
         (!node.prefixes || node.prefixes.size === 0)
       ) {
@@ -449,61 +513,6 @@ export class TreeService {
         break;
       }
     }
-  }
-  private deletePhraseRecursive(
-    node: TreeNode,
-    phrasePath: string,
-    index: number,
-    originalPhrase: string,
-  ): boolean {
-    if (index === phrasePath.length) {
-      // Дошли до конца фразы
-      if (!node.isEndOfWord || node.original !== originalPhrase) {
-        return false;
-      }
-
-      // Снимаем отметку о конце фразы и удаляем оригинальный текст
-      node.isEndOfWord = false;
-      delete node.original;
-
-      // Если у узла нет детей, его можно удалить
-      return node.children.size === 0;
-    }
-
-    const char = phrasePath[index];
-    const childNode = node.children.get(char);
-
-    if (!childNode) {
-      return false;
-    }
-
-    const shouldDeleteChild = this.deletePhraseRecursive(
-      childNode,
-      phrasePath,
-      index + 1,
-      originalPhrase,
-    );
-
-    if (shouldDeleteChild) {
-      node.children.delete(char);
-
-      // Проверяем, можно ли удалить текущий узел
-      // Узел можно удалить только если:
-      // 1. У него нет детей
-      // 2. Он не является концом другой фразы ИЛИ его original не совпадает с удаляемой фразой
-      const canDeleteNode =
-        node.children.size === 0 &&
-        (!node.isEndOfWord || node.original === originalPhrase);
-
-      if (canDeleteNode && node.original === originalPhrase) {
-        node.isEndOfWord = false;
-        delete node.original;
-      }
-
-      return canDeleteNode;
-    }
-
-    return false;
   }
 
   /**
@@ -515,8 +524,10 @@ export class TreeService {
 
     return {
       totalNodes: wordStats.nodes + phraseStats.nodes,
-      totalWords: wordStats.words,
-      totalPhrases: phraseStats.words,
+      totalWords: wordStats.uniqueWords,
+      totalPhrases: phraseStats.uniqueWords,
+      totalWordOccurrences: wordStats.totalOccurrences,
+      totalPhraseOccurrences: phraseStats.totalOccurrences,
     };
   }
 
@@ -525,18 +536,21 @@ export class TreeService {
    */
   private getTreeStats(node: TreeNode): {
     nodes: number;
-    words: number;
+    uniqueWords: number;
+    totalOccurrences: number;
   } {
     let nodes = 1;
-    let words = node.isEndOfWord ? 1 : 0;
+    let uniqueWords = node.isEndOfWord && node.count > 0 ? 1 : 0;
+    let totalOccurrences = node.isEndOfWord ? node.count : 0;
 
     for (const childNode of node.children.values()) {
       const childStats = this.getTreeStats(childNode);
       nodes += childStats.nodes;
-      words += childStats.words;
+      uniqueWords += childStats.uniqueWords;
+      totalOccurrences += childStats.totalOccurrences;
     }
 
-    return { nodes, words };
+    return { nodes, uniqueWords, totalOccurrences };
   }
 
   /**
@@ -545,9 +559,11 @@ export class TreeService {
   clear(): void {
     this.wordTrie.children.clear();
     this.wordTrie.isEndOfWord = false;
+    this.wordTrie.count = 0;
 
     this.phraseTrie.children.clear();
     this.phraseTrie.isEndOfWord = false;
+    this.phraseTrie.count = 0;
   }
 
   /**
