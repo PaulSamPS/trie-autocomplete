@@ -1,6 +1,6 @@
 {
   "name": "tree-autocomplete",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Реализация префиксного дерева для автозаполнения с поддержкой слов и фраз",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -19,6 +19,10 @@
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
     "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PaulSamPS/trie-autocomplete"
   },
   "keywords": [
     "trie",
